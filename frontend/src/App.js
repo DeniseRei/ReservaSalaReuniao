@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ReservaList from './components/ReservaList';
 import ReservaEdit from './components/ReservaEdit';
 import ReservaForm from './components/ReservaForm'; // Importando o componente do formulário
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const App = () => {
     return (

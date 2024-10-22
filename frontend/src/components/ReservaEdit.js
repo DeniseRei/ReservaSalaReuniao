@@ -1,10 +1,9 @@
-// src/components/ReservaEdit.js
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosConfig from '../AxiosConfig';
 
 const ReservaEdit = () => {
-    const { id } = useParams(); // Obtém o ID da reserva a ser editada
+    const { id } = useParams();
     const navigate = useNavigate();
     const [reserva, setReserva] = useState({
         responsavel: '',
@@ -35,48 +34,63 @@ const ReservaEdit = () => {
         e.preventDefault();
         try {
             await axiosConfig.put(`/reservas/${id}`, reserva);
-            navigate('/reservas'); // Redireciona após a edição
+            navigate('/reservas');
         } catch (error) {
             console.error('Erro ao editar reserva:', error);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                name="responsavel"
-                placeholder="Responsável"
-                value={reserva.responsavel}
-                onChange={handleChange}
-                required
-            />
-            <input
-                type="number"
-                name="sala_id"
-                placeholder="Sala ID"
-                value={reserva.sala_id}
-                onChange={handleChange}
-                required
-            />
-            <input
-                type="datetime-local"
-                name="inicio"
-                placeholder="Início"
-                value={reserva.inicio}
-                onChange={handleChange}
-                required
-            />
-            <input
-                type="datetime-local"
-                name="fim"
-                placeholder="Fim"
-                value={reserva.fim}
-                onChange={handleChange}
-                required
-            />
-            <button type="submit">Salvar Reserva</button>
-        </form>
+        <div className="container mt-5">
+            <h2>Editar Reserva</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        name="responsavel"
+                        className="form-control"
+                        placeholder="Responsável"
+                        value={reserva.responsavel}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <input
+                        type="number"
+                        name="sala_id"
+                        className="form-control"
+                        placeholder="Sala ID"
+                        value={reserva.sala_id}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <input
+                        type="datetime-local"
+                        name="inicio"
+                        className="form-control"
+                        placeholder="Início"
+                        value={reserva.inicio}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <input
+                        type="datetime-local"
+                        name="fim"
+                        className="form-control"
+                        placeholder="Fim"
+                        value={reserva.fim}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary">Salvar Reserva</button>
+            </form>
+        </div>
     );
 };
 
