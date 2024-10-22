@@ -1,0 +1,32 @@
+# Ignorar cache do PHPUnit
+.phpunit.cache
+.phpunit.result.cache
+
+# Ignorar dependências
+/node_modules
+/vendor
+
+# Ignorar diretórios de build e arquivos temporários
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+
+# Ignorar arquivos de configuração do ambiente
+.env
+.env.backup
+.env.production
+
+# Ignorar arquivos de log
+npm-debug.log
+yarn-error.log
+
+# Ignorar configurações de desenvolvimento
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Ignorar arquivos de configuração de IDEs
+/.fleet
+/.idea
+/.vscode
