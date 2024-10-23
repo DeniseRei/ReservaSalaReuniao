@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axiosConfig from '../AxiosConfig';
+import axiosConfig from '../../AxiosConfig';
 
 const ReservaEdit = () => {
     const { id } = useParams();

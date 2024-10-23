@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axiosConfig from '../AxiosConfig'; 
+import axiosConfig from '../../AxiosConfig'; 
 import { useNavigate } from 'react-router-dom'; 
 
 const ReservaForm = () => {

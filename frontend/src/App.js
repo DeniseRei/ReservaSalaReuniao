@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import ReservaList from './components/ReservaList';
-import ReservaEdit from './components/ReservaEdit';
-import ReservaForm from './components/ReservaForm'; // Importando o componente do formulário
+// Exemplo de importação depois da mudança
+import ReservaEdit from './components/Reserva/ReservaEdit';
+import ReservaForm from './components/Reserva/ReservaForm';
+import ReservaList from './components/Reserva/ReservaList';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 

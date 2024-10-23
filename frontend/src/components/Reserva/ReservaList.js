@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import axiosConfig from '../AxiosConfig';
+import axiosConfig from '../../AxiosConfig';
 import { useTable, useSortBy, usePagination } from 'react-table';
-import ReservaForm from './ReservaForm'; // Importe o formulário
+import ReservaForm from './ReservaForm';
 
 const ReservaList = () => {
     const [reservas, setReservas] = useState([]);
