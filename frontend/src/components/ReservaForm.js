@@ -72,7 +72,7 @@ const ReservaForm = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Criar Reserva</button>
+                <button type="submit" className="btn btn-primary mt-2">Criar Reserva</button> {/* Adicionando margem superior ao botão */}
             </form>
         </div>
     );
