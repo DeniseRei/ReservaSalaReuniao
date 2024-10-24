@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ReservaController extends Controller
 {
@@ -23,23 +24,25 @@ class ReservaController extends Controller
             'fim' => 'required|date|after:inicio',
         ]);
 
-        // Verifica se a sala está disponível
-        $disponibilidade = $this->verificarDisponibilidade($request->sala_id, $request->inicio, $request->fim);
+        // Convertendo as datas para o formato do banco de dados (se necessário)
+        $inicio = Carbon::parse($request->inicio)->format('Y-m-d H:i:s');
+        $fim = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
 
-        // Se não estiver disponível, retorna um erro
+        // Verifica se a sala está disponível
+        $disponibilidade = $this->verificarDisponibilidade($request->sala_id, $inicio, $fim);
+
         if (!$disponibilidade['disponivel']) {
             return response()->json(['error' => 'A sala já está reservada nesse período.'], 409);
         }
 
-        // Cria a reserva, passando apenas os campos necessários
+        // Cria a reserva
         $reserva = Reserva::create([
             'sala_id' => $request->sala_id,
             'responsavel' => $request->responsavel,
-            'inicio' => $request->inicio,
-            'fim' => $request->fim,
+            'inicio' => $inicio,
+            'fim' => $fim,
         ]);
 
-        // Retorna a reserva criada com um status 201 (Created)
         return response()->json($reserva, 201);
     }
 

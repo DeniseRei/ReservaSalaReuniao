@@ -8,7 +8,9 @@ const ReservaForm = ({ onReservaCriada }) => {
     const [inicio, setInicio] = useState('');
     const [fim, setFim] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState(''); // Estado para a mensagem de sucesso
 
+    // Função para buscar salas disponíveis
     useEffect(() => {
         const fetchSalas = async () => {
             try {
@@ -19,25 +21,45 @@ const ReservaForm = ({ onReservaCriada }) => {
                 setErrorMessage('Erro ao carregar salas. Tente novamente mais tarde.');
             }
         };
-        
+
         fetchSalas();
     }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setErrorMessage(''); // Limpa a mensagem de erro antes de tentar enviar
-
+    
+        const now = new Date();
+    
+        // Verifica se a data de início ou fim é no passado
+        if (new Date(inicio) < now || new Date(fim) < now) {
+            setErrorMessage('As reservas não podem ser feitas para o passado, verifique as datas.');
+            return;
+        }
+    
         try {
+            // Formata a data para o padrão ISO 8601
+            const inicioFormatted = new Date(inicio).toISOString().slice(0, 19); // Formato 'YYYY-MM-DDTHH:MM:SS'
+            const fimFormatted = new Date(fim).toISOString().slice(0, 19);
+    
             const response = await axiosConfig.post('/reservas', {
                 sala_id: salaId,
                 responsavel: responsavel,
-                inicio: inicio,
-                fim: fim,
+                inicio: inicioFormatted,
+                fim: fimFormatted,
             });
-
-            // Lógica para lidar com a reserva criada, como chamar a função de callback
-            onReservaCriada(response.data); // Exemplo
-
+    
+            // Lógica para lidar com a reserva criada
+            onReservaCriada(response.data); 
+    
+            // Exibe a mensagem de sucesso
+            setSuccessMessage('Reserva cadastrada com sucesso!');
+            
+            // Remove a mensagem de sucesso após 2 segundos
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 2000); // 2 segundos
+    
             // Limpa o formulário após a criação da reserva
             setSalaId('');
             setResponsavel('');
@@ -45,7 +67,6 @@ const ReservaForm = ({ onReservaCriada }) => {
             setFim('');
         } catch (error) {
             console.error('Erro ao cadastrar reserva:', error);
-            // Exibe a mensagem de erro retornada pela API
             setErrorMessage(error.response?.data?.error || 'Erro ao cadastrar reserva. Tente novamente.');
         }
     };
@@ -55,6 +76,7 @@ const ReservaForm = ({ onReservaCriada }) => {
             <div className="card-header">Cadastrar Reserva</div>
             <div className="card-body">
                 {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+                {successMessage && <div className="alert alert-success">{successMessage}</div>} {/* Mensagem de sucesso */}
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label htmlFor="salaId" className="form-label">Selecione a Sala</label>
