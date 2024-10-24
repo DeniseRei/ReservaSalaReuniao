@@ -8,8 +8,10 @@ const SalaEdit = () => {
     const [sala, setSala] = useState({
         nome: '',
         capacidade: '',
+        numero: '',
     });
     const [loading, setLoading] = useState(true); // Estado para monitorar o carregamento
+    const [mensagem, setMensagem] = useState(''); // Estado para a mensagem de feedback
 
     useEffect(() => {
         const fetchSala = async () => {
@@ -35,10 +37,26 @@ const SalaEdit = () => {
         e.preventDefault();
         try {
             await axiosConfig.put(`/salas/${id}`, sala);
-            navigate('/salas');
+            setMensagem('Sala atualizada com sucesso!'); // Mensagem de sucesso
+            
+            // Limpa a mensagem após 2 segundos e navega para salas
+            setTimeout(() => {
+                setMensagem('');
+                navigate('/salas');
+            }, 2000);
         } catch (error) {
             console.error('Erro ao editar a sala:', error);
+            setMensagem('Não foi possível atualizar a sala.'); // Mensagem de erro
+            
+            // Limpa a mensagem após 3 segundos
+            setTimeout(() => {
+                setMensagem('');
+            }, 3000);
         }
+    };
+
+    const handleBack = () => {
+        navigate('/salas'); // Navega para a página de salas
     };
 
     if (loading) {
@@ -47,32 +65,55 @@ const SalaEdit = () => {
 
     return (
         <div className="container mt-5">
-            <h2>Editar Sala</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        name="nome"
-                        className="form-control"
-                        placeholder="Nome da Sala"
-                        value={sala.nome}
-                        onChange={handleChange}
-                        required
-                    />
+            <div className="card mb-3">
+                <div className="card-header">Editar Sala</div>
+                <div className="card-body">
+                    {mensagem && <div className="alert alert-info">{mensagem}</div>} {/* Mensagem de feedback */}
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label htmlFor="nome" className="form-label">Nome da Sala</label>
+                            <input
+                                type="text"
+                                name="nome"
+                                id="nome"
+                                className="form-control"
+                                placeholder="Nome da Sala"
+                                value={sala.nome}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="capacidade" className="form-label">Capacidade</label>
+                            <input
+                                type="number"
+                                name="capacidade"
+                                id="capacidade"
+                                className="form-control"
+                                placeholder="Capacidade"
+                                value={sala.capacidade}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="numero" className="form-label">Número</label>
+                            <input
+                                type="number"
+                                name="numero"
+                                id="numero"
+                                className="form-control"
+                                placeholder="Número"
+                                value={sala.numero}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary">Salvar Sala</button>
+                        <button type="button" onClick={handleBack} className="btn btn-secondary ms-2">Voltar</button> {/* Botão Voltar */}
+                    </form>
                 </div>
-                <div className="mb-3">
-                    <input
-                        type="number"
-                        name="capacidade"
-                        className="form-control"
-                        placeholder="Capacidade"
-                        value={sala.capacidade}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Salvar Sala</button>
-            </form>
+            </div>
         </div>
     );
 };

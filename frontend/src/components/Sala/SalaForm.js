@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const SalaForm = ({ onSalaCreated }) => {
     const [nome, setNome] = useState('');
@@ -45,51 +44,58 @@ const SalaForm = ({ onSalaCreated }) => {
         } catch (error) {
             setError(error.response?.data?.message || "Erro ao criar sala.");
         }
+        
     };
 
     return (
-        <div className="container mt-5">
-            <h2>Criar Sala</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)}
-                        placeholder="Nome da Sala"
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="number"
-                        className="form-control"
-                        value={capacidade}
-                        onChange={(e) => setCapacidade(e.target.value)}
-                        placeholder="Capacidade"
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="number"
-                        className="form-control"
-                        value={numero}
-                        onChange={(e) => setNumero(e.target.value)}
-                        placeholder="Número"
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary mt-2">Criar Sala</button>
-                <button type="button" onClick={clearForm} className="btn btn-secondary mt-2 ms-2">Cancelar</button> {/* Botão Cancelar */}
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="card mb-3">
+            <div className="card-header">Criar Sala</div>
+            <div className="card-body">
+                {error && <div className="alert alert-danger">{error}</div>}
                 {successMessage && (
-                    <div className="alert alert-success mt-3" role="alert">
-                        {successMessage}
-                    </div>
+                    <div className="alert alert-success">{successMessage}</div>
                 )}
-            </form>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="nome" className="form-label">Nome da Sala</label>
+                        <input
+                            type="text"
+                            id="nome"
+                            className="form-control"
+                            value={nome}
+                            onChange={(e) => setNome(e.target.value)}
+                            placeholder="Nome da Sala"
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="capacidade" className="form-label">Capacidade</label>
+                        <input
+                            type="number"
+                            id="capacidade"
+                            className="form-control"
+                            value={capacidade}
+                            onChange={(e) => setCapacidade(e.target.value)}
+                            placeholder="Capacidade"
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="numero" className="form-label">Número</label>
+                        <input
+                            type="number"
+                            id="numero"
+                            className="form-control"
+                            value={numero}
+                            onChange={(e) => setNumero(e.target.value)}
+                            placeholder="Número"
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Criar Sala</button>
+                    <button type="button" onClick={clearForm} className="btn btn-secondary ms-2">Limpar Formulário</button>
+                </form>
+            </div>
         </div>
     );
 };
