@@ -93,7 +93,7 @@ const ReservaList = () => {
             <button onClick={() => setShowForm(!showForm)} className="btn btn-success mb-3">
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Reserva'}
             </button>
-            {showForm && <ReservaForm onFormSubmit={fetchReservas} />} {/* Exibe o formulário */}
+            {showForm && <ReservaForm onReservaCriada={fetchReservas} />} {/* Exibe o formulário */}
             <div className="card mt-4"> {/* Adicionando margem superior à card */}
                 <div className="card-body">
                     {loading ? (

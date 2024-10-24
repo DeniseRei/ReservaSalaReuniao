@@ -2,23 +2,30 @@ import React, { useState } from 'react';
 import axiosConfig from '../../AxiosConfig'; 
 import { useNavigate } from 'react-router-dom'; 
 
-const ReservaForm = () => {
+const ReservaForm = ({ onReservaCriada }) => {
     const [responsavel, setResponsavel] = useState('');
     const [salaId, setSalaId] = useState('');
     const [inicio, setInicio] = useState('');
     const [fim, setFim] = useState('');
-    const navigate = useNavigate(); // Para redirecionar após a criação da reserva
+    const [successMessage, setSuccessMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault(); 
         try {
-            await axiosConfig.post('/reservas', {
+            const response = await axiosConfig.post('/reservas', {
                 sala_id: salaId,
                 responsavel,
                 inicio,
                 fim,
             });
-            navigate('/reservas'); // Redireciona após a criação
+
+            onReservaCriada(response.data); // Adiciona a nova reserva à lista
+            setSuccessMessage('Reserva efetuada com Sucesso!');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 3000);
+            navigate('/reservas'); 
         } catch (error) {
             if (error.response && error.response.status === 422) {
                 console.error('Erro de validação:', error.response.data.errors);
@@ -72,7 +79,12 @@ const ReservaForm = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary mt-2">Criar Reserva</button> {/* Adicionando margem superior ao botão */}
+                <button type="submit" className="btn btn-primary mt-2">Criar Reserva</button>
+                {successMessage && (
+                    <div className="alert alert-success mt-3" role="alert">
+                        {successMessage}
+                    </div>
+                )}
             </form>
         </div>
     );
