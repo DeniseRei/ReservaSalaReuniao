@@ -10,7 +10,7 @@ const ReservaList = () => {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false); 
-    const [message, setMessage] = useState(''); // Estado para a mensagem de feedback
+    const [message, setMessage] = useState('');
 
     const fetchReservas = async () => {
         setLoading(true);
@@ -27,7 +27,7 @@ const ReservaList = () => {
     const handleCancel = useCallback(async (id) => {
         try {
             await axiosConfig.delete(`/reservas/${id}`);
-            setMessage('Reserva excluída com sucesso!'); // Define a mensagem de sucesso
+            setMessage('Reserva excluída com sucesso!');
             fetchReservas();
         } catch (error) {
             console.error('Erro ao cancelar reserva:', error);
@@ -38,7 +38,6 @@ const ReservaList = () => {
         fetchReservas();
     }, []);
 
-    // Limpa a mensagem após 3 segundos
     useEffect(() => {
         if (message) {
             const timer = setTimeout(() => {
@@ -49,28 +48,28 @@ const ReservaList = () => {
     }, [message]);
 
     const columns = React.useMemo(() => [
-        {
+        { 
             Header: 'Sala ID',
             accessor: 'sala_id',
         },
-        {
+        { 
             Header: 'Nome da Sala',
             accessor: 'sala.nome', 
         },
-        {
+        { 
             Header: 'Responsável',
             accessor: 'responsavel',
-        },
-        {
+         },
+        { 
             Header: 'Início',
             accessor: 'inicio',
-            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }), 
+            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }),
         },
-        {
+        { 
             Header: 'Fim',
             accessor: 'fim',
-            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }), 
-        },
+            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }),
+         },
         {
             Header: 'Ações',
             Cell: ({ row }) => (
@@ -115,7 +114,7 @@ const ReservaList = () => {
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Lista de Reservas</h2>
-            {message && <div className="alert alert-success">{message}</div>} {/* Exibe a mensagem de sucesso */}
+            {message && <div className="alert alert-success">{message}</div>}
             <button onClick={() => setShowForm(!showForm)} className="btn btn-success mb-3">
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Reserva'}
             </button>

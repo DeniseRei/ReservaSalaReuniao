@@ -23,12 +23,29 @@ class ReservaController extends Controller
             'fim' => 'required|date|after:inicio',
         ]);
 
-        return Reserva::create($request->all());
+        // Verifica se a sala está disponível
+        $disponibilidade = $this->verificarDisponibilidade($request->sala_id, $request->inicio, $request->fim);
+
+        // Se não estiver disponível, retorna um erro
+        if (!$disponibilidade['disponivel']) {
+            return response()->json(['error' => 'A sala já está reservada nesse período.'], 409);
+        }
+
+        // Cria a reserva, passando apenas os campos necessários
+        $reserva = Reserva::create([
+            'sala_id' => $request->sala_id,
+            'responsavel' => $request->responsavel,
+            'inicio' => $request->inicio,
+            'fim' => $request->fim,
+        ]);
+
+        // Retorna a reserva criada com um status 201 (Created)
+        return response()->json($reserva, 201);
     }
 
     public function show(Reserva $reserva)
     {
-        return $reserva;
+        return response()->json($reserva);
     }
 
     public function update(Request $request, Reserva $reserva)
@@ -41,7 +58,7 @@ class ReservaController extends Controller
         ]);
 
         $reserva->update($request->all());
-        return $reserva;
+        return response()->json($reserva);
     }
 
     public function destroy(Reserva $reserva)
@@ -60,5 +77,19 @@ class ReservaController extends Controller
         }
     }
 
+    public function verificarDisponibilidade($salaId, $inicio, $fim)
+    {
+        $reservasExistentes = Reserva::where('sala_id', $salaId)
+            ->where(function ($query) use ($inicio, $fim) {
+                $query->whereBetween('inicio', [$inicio, $fim])
+                    ->orWhereBetween('fim', [$inicio, $fim])
+                    ->orWhere(function ($query) use ($inicio, $fim) {
+                        $query->where('inicio', '<=', $inicio)
+                            ->where('fim', '>=', $fim);
+                    });
+            })
+            ->exists();
 
+        return ['disponivel' => !$reservasExistentes];
+    }
 }
