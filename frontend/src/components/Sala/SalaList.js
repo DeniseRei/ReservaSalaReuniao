@@ -2,18 +2,18 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axiosConfig from '../../AxiosConfig';
 import { useTable, useSortBy, usePagination } from 'react-table';
-import SalaForm from './SalaForm'; // Importando o componente de formulário
+import SalaForm from './SalaForm';
 
 const SalaList = () => {
     const [salas, setSalas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [showForm, setShowForm] = useState(false); // Estado para controlar a exibição do formulário
+    const [showForm, setShowForm] = useState(false);
 
     const fetchSalas = async () => {
         setLoading(true);
         try {
-            const response = await axiosConfig.get('/salas'); // URL da API para buscar salas
+            const response = await axiosConfig.get('/salas');
             setSalas(response.data);
         } catch (error) {
             console.error("Erro ao buscar salas:", error);
@@ -24,14 +24,21 @@ const SalaList = () => {
     };
 
     const handleDelete = useCallback(async (id) => {
-        try {
-            await axiosConfig.delete(`/salas/${id}`); // URL da API para deletar sala
-            setSalas(salas.filter(sala => sala.id !== id));
-        } catch (error) {
-            console.error("Erro ao excluir sala:", error);
-            setError('Erro ao excluir sala.');
+        if (window.confirm("Tem certeza que deseja excluir esta sala?")) {
+            try {
+                await axiosConfig.delete(`/salas/${id}`);
+                setSalas(salas.filter(sala => sala.id !== id));
+            } catch (error) {
+                console.error("Erro ao excluir sala:", error);
+                setError('Erro ao excluir sala.');
+            }
         }
     }, [salas]);
+
+    // Função que será chamada quando uma sala for criada
+    const handleSalaCreated = async () => {
+        await fetchSalas(); // Atualiza a lista de salas
+    };
 
     useEffect(() => {
         fetchSalas();
@@ -39,16 +46,20 @@ const SalaList = () => {
 
     const columns = React.useMemo(() => [
         {
+            Header: 'ID',
+            accessor: 'id',
+        },
+        {
             Header: 'Nome',
-            accessor: 'nome', // A chave que contém o nome da sala
+            accessor: 'nome',
         },
         {
             Header: 'Capacidade',
-            accessor: 'capacidade', // A chave que contém a capacidade da sala
+            accessor: 'capacidade',
         },
         {
             Header: 'Número',
-            accessor: 'numero', // A chave que contém o número da sala
+            accessor: 'numero',
         },
         {
             Header: 'Ações',
@@ -93,7 +104,7 @@ const SalaList = () => {
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Sala'}
             </button>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            {showForm && <SalaForm />} {/* Condicional para renderizar o formulário */}
+            {showForm && <SalaForm onSalaCreated={handleSalaCreated} />} {/* Passando a função como prop */}
             <div className="card mt-4">
                 <div className="card-body">
                     {loading ? (

@@ -1,44 +1,49 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importando useNavigate para redirecionamento
+import { useNavigate } from 'react-router-dom';
 
-const SalaForm = () => {
+const SalaForm = ({ onSalaCreated }) => {
     const [nome, setNome] = useState('');
     const [capacidade, setCapacidade] = useState('');
     const [numero, setNumero] = useState('');
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const navigate = useNavigate(); // Hook para redirecionamento
+
+    // Função para limpar o formulário
+    const clearForm = () => {
+        setNome('');
+        setCapacidade('');
+        setNumero('');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Criando um objeto com os dados da sala
+    
+        if (!nome || capacidade <= 0 || numero <= 0) {
+            setError("Por favor, preencha todos os campos corretamente.");
+            return;
+        }
+    
         const salaData = {
             nome,
             capacidade,
             numero,
         };
-
+    
         try {
-            // Ajuste a URL aqui para o seu backend
-            const response = await axios.post('http://localhost:8000/api/salas', salaData);
+            await axios.post('http://localhost:8000/api/salas', salaData);
             setSuccessMessage("Sala criada com sucesso!");
-            console.log("Sala criada com sucesso:", response.data);
-            // Redireciona ou limpa os campos se necessário
+            clearForm(); // Limpa o formulário após a criação
+            
+            // Chama a função de atualização da lista de salas
+            onSalaCreated();
+
+            // Limpa a mensagem de sucesso após 2 segundos
             setTimeout(() => {
                 setSuccessMessage('');
-                navigate('/salas'); // Redireciona para a lista de salas após a criação
-            }, 3000);
-            // Limpa os campos
-            setNome('');
-            setCapacidade('');
-            setNumero('');
+            }, 2000);
         } catch (error) {
-            // Verifique se o erro tem a estrutura esperada
-            const errorMessage = error.response?.data?.message || "Erro ao criar sala.";
-            setError(errorMessage);
-            console.error("Erro ao criar sala:", error);
+            setError(error.response?.data?.message || "Erro ao criar sala.");
         }
     };
 
@@ -77,6 +82,7 @@ const SalaForm = () => {
                     />
                 </div>
                 <button type="submit" className="btn btn-primary mt-2">Criar Sala</button>
+                <button type="button" onClick={clearForm} className="btn btn-secondary mt-2 ms-2">Cancelar</button> {/* Botão Cancelar */}
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 {successMessage && (
                     <div className="alert alert-success mt-3" role="alert">
