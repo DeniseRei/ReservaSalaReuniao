@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosConfig from '../../AxiosConfig';
 import { format, parseISO } from 'date-fns';
 
-
 const ReservaEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -13,12 +12,26 @@ const ReservaEdit = () => {
         inicio: '',
         fim: '',
     });
+    const [salas, setSalas] = useState([]);
+    const [mensagem, setMensagem] = useState(''); // Estado para armazenar a mensagem
+
+    useEffect(() => {
+        const fetchSalas = async () => {
+            try {
+                const response = await axiosConfig.get('/salas');
+                setSalas(response.data);
+            } catch (error) {
+                console.error('Erro ao buscar salas:', error);
+            }
+        };
+
+        fetchSalas();
+    }, []);
 
     useEffect(() => {
         const fetchReserva = async () => {
             try {
                 const response = await axiosConfig.get(`/reservas/${id}`);
-                setReserva(response.data);
                 const formattedInicio = format(parseISO(response.data.inicio), "yyyy-MM-dd'T'HH:mm");
                 const formattedFim = format(parseISO(response.data.fim), "yyyy-MM-dd'T'HH:mm");
                 setReserva({
@@ -44,20 +57,32 @@ const ReservaEdit = () => {
         try {
             const reservaData = {
                 ...reserva,
-                inicio: format(new Date(reserva.inicio), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'), // Formato de envio desejado
-                fim: format(new Date(reserva.fim), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'), // Formato de envio desejado
+                inicio: format(new Date(reserva.inicio), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'),
+                fim: format(new Date(reserva.fim), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'),
             };
             await axiosConfig.put(`/reservas/${id}`, reservaData);
-            navigate('/reservas');
+            setMensagem('Reserva atualizada com sucesso!'); // Mensagem de sucesso
+            
+            // Limpa a mensagem após 3 segundos e navega para reservas
+            setTimeout(() => {
+                setMensagem('');
+                navigate('/reservas');
+            }, 2000);
         } catch (error) {
             console.error('Erro ao editar reserva:', error);
+            setMensagem('Não foi possível atualizar a reserva.'); // Mensagem de erro
+            
+            // Limpa a mensagem após 3 segundos
+            setTimeout(() => {
+                setMensagem('');
+            }, 3000);
         }
     };
-    
 
     return (
         <div className="container mt-5">
             <h2>Editar Reserva</h2>
+            {mensagem && <div className="alert alert-info">{mensagem}</div>} {/* Renderiza a mensagem se existir */}
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <input
@@ -71,20 +96,25 @@ const ReservaEdit = () => {
                     />
                 </div>
                 <div className="mb-3">
-                    <input
-                        type="number"
+                    <select
+                        id="salaSelect"
                         name="sala_id"
                         className="form-control"
-                        placeholder="Sala ID"
                         value={reserva.sala_id}
                         onChange={handleChange}
                         required
-                    />
+                    >
+                        <option value="">Selecione uma sala</option>
+                        {salas.map((sala) => (
+                            <option key={sala.id} value={sala.id}>
+                                {sala.nome}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div className="mb-3">
                     <input
                         type="datetime-local"
-                        name="inicio"
                         className="form-control"
                         placeholder="Início"
                         value={reserva.inicio}
@@ -95,7 +125,6 @@ const ReservaEdit = () => {
                 <div className="mb-3">
                     <input
                         type="datetime-local"
-                        name="fim"
                         className="form-control"
                         placeholder="Fim"
                         value={reserva.fim}
@@ -103,7 +132,7 @@ const ReservaEdit = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Salvar Reserva</button>
+                <button type="submit" className="btn btn-primary mt-2">Salvar Reserva</button>
             </form>
         </div>
     );

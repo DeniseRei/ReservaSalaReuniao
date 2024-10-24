@@ -1,92 +1,98 @@
-import React, { useState } from 'react';
-import axiosConfig from '../../AxiosConfig'; 
-import { useNavigate } from 'react-router-dom'; 
+import React, { useEffect, useState } from 'react';
+import axiosConfig from '../../AxiosConfig';
 
 const ReservaForm = ({ onReservaCriada }) => {
-    const [responsavel, setResponsavel] = useState('');
+    const [salas, setSalas] = useState([]);
     const [salaId, setSalaId] = useState('');
+    const [responsavel, setResponsavel] = useState('');
     const [inicio, setInicio] = useState('');
     const [fim, setFim] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchSalas = async () => {
+            try {
+                const response = await axiosConfig.get('/salas'); // Ajuste a URL conforme sua API
+                setSalas(response.data);
+            } catch (error) {
+                console.error('Erro ao buscar salas:', error);
+            }
+        };
+        
+        fetchSalas();
+    }, []);
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         try {
-            const response = await axiosConfig.post('/reservas', {
+            await axiosConfig.post('/reservas', {
                 sala_id: salaId,
                 responsavel,
                 inicio,
                 fim,
             });
-
-            onReservaCriada(response.data); // Adiciona a nova reserva à lista
-            setSuccessMessage('Reserva efetuada com Sucesso!');
-            setTimeout(() => {
-                setSuccessMessage('');
-            }, 3000);
-            navigate('/reservas'); 
+            onReservaCriada(); // Chama a função para atualizar a lista de reservas
+            // Limpa os campos após o envio
+            setSalaId('');
+            setResponsavel('');
+            setInicio('');
+            setFim('');
         } catch (error) {
-            if (error.response && error.response.status === 422) {
-                console.error('Erro de validação:', error.response.data.errors);
-            } else {
-                console.error('Erro ao criar reserva:', error);
-            }
+            console.error('Erro ao cadastrar reserva:', error);
         }
     };
 
     return (
-        <div className="container mt-5">
-            <h2>Reservar Sala de Reunião</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Responsável"
-                        value={responsavel}
-                        onChange={(e) => setResponsavel(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="number"
-                        className="form-control"
-                        placeholder="Sala ID"
-                        value={salaId}
-                        onChange={(e) => setSalaId(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="datetime-local"
-                        className="form-control"
-                        placeholder="Início"
-                        value={inicio}
-                        onChange={(e) => setInicio(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="datetime-local"
-                        className="form-control"
-                        placeholder="Fim"
-                        value={fim}
-                        onChange={(e) => setFim(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary mt-2">Criar Reserva</button>
-                {successMessage && (
-                    <div className="alert alert-success mt-3" role="alert">
-                        {successMessage}
-                    </div>
-                )}
-            </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+                <label htmlFor="salaId" className="form-label">Selecione a Sala</label>
+                <select
+                    id="salaId"
+                    value={salaId}
+                    onChange={(e) => setSalaId(e.target.value)}
+                    required
+                    className="form-select"
+                >
+                    <option value="">Selecione uma sala</option>
+                    {salas.map(sala => (
+                        <option key={sala.id} value={sala.id}>{sala.nome}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="mb-3">
+                <label htmlFor="responsavel" className="form-label">Responsável</label>
+                <input
+                    type="text"
+                    id="responsavel"
+                    value={responsavel}
+                    onChange={(e) => setResponsavel(e.target.value)}
+                    required
+                    className="form-control"
+                />
+            </div>
+            <div className="mb-3">
+                <label htmlFor="inicio" className="form-label">Início</label>
+                <input
+                    type="datetime-local"
+                    id="inicio"
+                    value={inicio}
+                    onChange={(e) => setInicio(e.target.value)}
+                    required
+                    className="form-control"
+                />
+            </div>
+            <div className="mb-3">
+                <label htmlFor="fim" className="form-label">Fim</label>
+                <input
+                    type="datetime-local"
+                    id="fim"
+                    value={fim}
+                    onChange={(e) => setFim(e.target.value)}
+                    required
+                    className="form-control"
+                />
+            </div>
+            <button type="submit" className="btn btn-primary">Cadastrar Reserva</button>
+        </form>
     );
 };
 

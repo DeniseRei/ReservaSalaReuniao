@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Reserva;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReservaController extends Controller
 {
     public function index()
     {
-        return Reserva::all();
+        $reservas = Reserva::with('sala')->get();
+        return response()->json($reservas);
     }
 
     public function store(Request $request)
@@ -44,7 +46,19 @@ class ReservaController extends Controller
 
     public function destroy(Reserva $reserva)
     {
-        $reserva->delete();
-        return response()->noContent();
+        if (!$reserva) {
+            return response()->json(['error' => 'Reserva não encontrada'], 404);
+        }
+
+        try {
+            Log::info("Cancelando reserva com ID: " . $reserva->id);
+            $reserva->delete();
+            return response()->noContent();
+        } catch (\Exception $e) {
+            Log::error("Erro ao cancelar reserva: " . $e->getMessage());
+            return response()->json(['error' => 'Erro ao cancelar reserva'], 500);
+        }
     }
+
+
 }
