@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosConfig from '../../AxiosConfig';
+import { format, parseISO } from 'date-fns';
+
 
 const ReservaEdit = () => {
     const { id } = useParams();
@@ -17,6 +19,13 @@ const ReservaEdit = () => {
             try {
                 const response = await axiosConfig.get(`/reservas/${id}`);
                 setReserva(response.data);
+                const formattedInicio = format(parseISO(response.data.inicio), "yyyy-MM-dd'T'HH:mm");
+                const formattedFim = format(parseISO(response.data.fim), "yyyy-MM-dd'T'HH:mm");
+                setReserva({
+                    ...response.data,
+                    inicio: formattedInicio,
+                    fim: formattedFim,
+                });
             } catch (error) {
                 console.error('Erro ao buscar reserva:', error);
             }
@@ -33,12 +42,18 @@ const ReservaEdit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosConfig.put(`/reservas/${id}`, reserva);
+            const reservaData = {
+                ...reserva,
+                inicio: format(new Date(reserva.inicio), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'), // Formato de envio desejado
+                fim: format(new Date(reserva.fim), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'), // Formato de envio desejado
+            };
+            await axiosConfig.put(`/reservas/${id}`, reservaData);
             navigate('/reservas');
         } catch (error) {
             console.error('Erro ao editar reserva:', error);
         }
     };
+    
 
     return (
         <div className="container mt-5">

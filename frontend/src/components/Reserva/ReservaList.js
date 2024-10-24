@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import axiosConfig from '../../AxiosConfig';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import ReservaForm from './ReservaForm';
+import { format } from 'date-fns'; // Importe a função format
+import pt from 'date-fns/locale/pt-BR'; // Importe a localidade em português
 
 const ReservaList = () => {
     const [reservas, setReservas] = useState([]);
@@ -46,10 +48,12 @@ const ReservaList = () => {
         {
             Header: 'Início',
             accessor: 'inicio',
+            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }), // Formate a data
         },
         {
             Header: 'Fim',
             accessor: 'fim',
+            Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }), // Formate a data
         },
         {
             Header: 'Ações',
