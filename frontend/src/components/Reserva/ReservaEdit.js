@@ -63,7 +63,7 @@ const ReservaEdit = () => {
             await axiosConfig.put(`/reservas/${id}`, reservaData);
             setMensagem('Reserva atualizada com sucesso!'); // Mensagem de sucesso
             
-            // Limpa a mensagem após 3 segundos e navega para reservas
+            // Limpa a mensagem após 2 segundos e navega para reservas
             setTimeout(() => {
                 setMensagem('');
                 navigate('/reservas');
@@ -80,60 +80,66 @@ const ReservaEdit = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <h2>Editar Reserva</h2>
-            {mensagem && <div className="alert alert-info">{mensagem}</div>} {/* Renderiza a mensagem se existir */}
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <input
-                        type="text"
-                        name="responsavel"
-                        className="form-control"
-                        placeholder="Responsável"
-                        value={reserva.responsavel}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <select
-                        id="salaSelect"
-                        name="sala_id"
-                        className="form-control"
-                        value={reserva.sala_id}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Selecione uma sala</option>
-                        {salas.map((sala) => (
-                            <option key={sala.id} value={sala.id}>
-                                {sala.nome}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="datetime-local"
-                        className="form-control"
-                        placeholder="Início"
-                        value={reserva.inicio}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <input
-                        type="datetime-local"
-                        className="form-control"
-                        placeholder="Fim"
-                        value={reserva.fim}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary mt-2">Salvar Reserva</button>
-            </form>
+        <div className="card mb-3">
+            <div className="card-header">Editar Reserva</div>
+            <div className="card-body">
+                {mensagem && <div className="alert alert-info">{mensagem}</div>} {/* Renderiza a mensagem se existir */}
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="responsavel" className="form-label">Responsável</label>
+                        <input
+                            type="text"
+                            name="responsavel"
+                            className="form-control"
+                            placeholder="Digite o responsável"
+                            value={reserva.responsavel}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="salaSelect" className="form-label">Sala</label>
+                        <select
+                            id="salaSelect"
+                            name="sala_id"
+                            className="form-select"
+                            value={reserva.sala_id}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Selecione uma sala</option>
+                            {salas.map((sala) => (
+                                <option key={sala.id} value={sala.id}>
+                                    {sala.nome}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="inicio" className="form-label">Data de Início</label>
+                        <input
+                            type="datetime-local"
+                            name="inicio"
+                            className="form-control"
+                            value={reserva.inicio}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="fim" className="form-label">Data de Fim</label>
+                        <input
+                            type="datetime-local"
+                            name="fim"
+                            className="form-control"
+                            value={reserva.fim}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Salvar Reserva</button>
+                </form>
+            </div>
         </div>
     );
 };
