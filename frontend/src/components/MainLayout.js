@@ -20,7 +20,7 @@ const MainLayout = () => {
                 <h4>Menu</h4>
                 <ul>
                     <li>
-                        <Link to="/salas/cadastrar">
+                        <Link to="/salas">
                             <i className="fas fa-door-open"></i> Salas
                         </Link>
                     </li>

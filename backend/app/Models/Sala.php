@@ -9,7 +9,7 @@ class Sala extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nome']; // Campos que podem ser preenchidos em massa
+    protected $fillable = ['nome', 'capacidade', 'numero']; // Campos que podem ser preenchidos em massa
 
     public function reservas()
     {
