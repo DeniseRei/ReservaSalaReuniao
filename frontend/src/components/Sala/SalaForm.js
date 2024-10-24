@@ -1,12 +1,14 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importando useNavigate para redirecionamento
 
 const SalaForm = () => {
     const [nome, setNome] = useState('');
     const [capacidade, setCapacidade] = useState('');
     const [numero, setNumero] = useState('');
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const navigate = useNavigate(); // Hook para redirecionamento
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,9 +23,14 @@ const SalaForm = () => {
         try {
             // Ajuste a URL aqui para o seu backend
             const response = await axios.post('http://localhost:8000/api/salas', salaData);
-            setSuccess("Sala criada com sucesso!");
+            setSuccessMessage("Sala criada com sucesso!");
             console.log("Sala criada com sucesso:", response.data);
-            // Redirecione ou limpe os campos se necessário
+            // Redireciona ou limpa os campos se necessário
+            setTimeout(() => {
+                setSuccessMessage('');
+                navigate('/salas'); // Redireciona para a lista de salas após a criação
+            }, 3000);
+            // Limpa os campos
             setNome('');
             setCapacidade('');
             setNumero('');
@@ -36,32 +43,48 @@ const SalaForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Nome da Sala"
-                required
-            />
-            <input
-                type="number"
-                value={capacidade}
-                onChange={(e) => setCapacidade(e.target.value)}
-                placeholder="Capacidade"
-                required
-            />
-            <input
-                type="number"
-                value={numero}
-                onChange={(e) => setNumero(e.target.value)}
-                placeholder="Número"
-                required
-            />
-            <button type="submit">Criar Sala</button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {success && <p style={{ color: 'green' }}>{success}</p>}
-        </form>
+        <div className="container mt-5">
+            <h2>Criar Sala</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        placeholder="Nome da Sala"
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={capacidade}
+                        onChange={(e) => setCapacidade(e.target.value)}
+                        placeholder="Capacidade"
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={numero}
+                        onChange={(e) => setNumero(e.target.value)}
+                        placeholder="Número"
+                        required
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary mt-2">Criar Sala</button>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {successMessage && (
+                    <div className="alert alert-success mt-3" role="alert">
+                        {successMessage}
+                    </div>
+                )}
+            </form>
+        </div>
     );
 };
 
