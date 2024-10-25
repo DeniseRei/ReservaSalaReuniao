@@ -37,10 +37,31 @@ const ReservaForm = ({ onReservaCriada }) => {
             return;
         }
     
+        const inicioDate = new Date(inicio);
+        const fimDate = new Date(fim);
+    
+        // Verifica se a data de fim é posterior à data de início
+        if (fimDate <= inicioDate) {
+            setErrorMessage('A data fim deve ser posterior à data início.');
+            return;
+        }
         try {
-            // Formata a data para o padrão ISO 8601
-            const inicioFormatted = new Date(inicio).toISOString().slice(0, 19); // Formato 'YYYY-MM-DDTHH:MM:SS'
-            const fimFormatted = new Date(fim).toISOString().slice(0, 19);
+            // Formata a data para o padrão 'Y-m-d H:i:s'
+            const inicioFormatted = inicioDate.toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
+            const fimFormatted = fimDate.toISOString().slice(0, 19).replace('T', ' ');
+    
+            // Verifica disponibilidade antes de criar a reserva
+            const disponibilidadeResponse = await axiosConfig.post('/reservas/verificar-disponibilidade', {
+                sala_id: salaId,
+                inicio: inicioFormatted,
+                fim: fimFormatted,
+            });
+    
+            // Verifica se a resposta contém a propriedade 'disponivel'
+            if (disponibilidadeResponse.data.disponivel === false) {
+                setErrorMessage('A sala já está reservada nesse período.');
+                return;
+            }
     
             const response = await axiosConfig.post('/reservas', {
                 sala_id: salaId,
@@ -50,11 +71,11 @@ const ReservaForm = ({ onReservaCriada }) => {
             });
     
             // Lógica para lidar com a reserva criada
-            onReservaCriada(response.data); 
+            onReservaCriada(response.data);
     
             // Exibe a mensagem de sucesso
             setSuccessMessage('Reserva cadastrada com sucesso!');
-            
+    
             // Remove a mensagem de sucesso após 2 segundos
             setTimeout(() => {
                 setSuccessMessage('');
@@ -67,7 +88,8 @@ const ReservaForm = ({ onReservaCriada }) => {
             setFim('');
         } catch (error) {
             console.error('Erro ao cadastrar reserva:', error);
-            setErrorMessage(error.response?.data?.error || 'Erro ao cadastrar reserva. Tente novamente.');
+            // Aqui garantimos que a mensagem de erro seja retornada corretamente
+            setErrorMessage(error.response?.data?.error || 'Erro ao cadastrar reserva.');
         }
     };
 

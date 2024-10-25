@@ -29,9 +29,9 @@ class ReservaController extends Controller
         $fim = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
 
         // Verifica se a sala está disponível
-        $disponibilidade = $this->verificarDisponibilidade($request->sala_id, $inicio, $fim);
+        $disponibilidade = $this->verificarDisponibilidade($request);
 
-        if (!$disponibilidade['disponivel']) {
+        if (isset($disponibilidade['disponivel']) && !$disponibilidade['disponivel']) {
             return response()->json(['error' => 'A sala já está reservada nesse período.'], 409);
         }
 
@@ -80,19 +80,49 @@ class ReservaController extends Controller
         }
     }
 
-    public function verificarDisponibilidade($salaId, $inicio, $fim)
+    private function calcularDisponibilidade($reservas, $inicio, $fim)
     {
-        $reservasExistentes = Reserva::where('sala_id', $salaId)
-            ->where(function ($query) use ($inicio, $fim) {
-                $query->whereBetween('inicio', [$inicio, $fim])
-                    ->orWhereBetween('fim', [$inicio, $fim])
-                    ->orWhere(function ($query) use ($inicio, $fim) {
-                        $query->where('inicio', '<=', $inicio)
-                            ->where('fim', '>=', $fim);
-                    });
-            })
-            ->exists();
+        foreach ($reservas as $reserva) {
+            // Verifica se a reserva atual conflita com o novo período
+            if ($reserva->inicio < $fim && $reserva->fim > $inicio) {
+                return 'Reservado';
+            }
+        }
+        return 'Disponível';
+    }
 
-        return ['disponivel' => !$reservasExistentes];
+    public function verificarDisponibilidade(Request $request)
+    {
+        try {
+            // Validação dos dados de entrada
+            $request->validate([
+                'sala_id' => 'required|exists:salas,id',
+                'inicio' => 'required|date_format:Y-m-d H:i:s',
+                'fim' => 'required|date_format:Y-m-d H:i:s|after:inicio',
+            ]);
+
+            // Convertendo as datas para o formato do banco de dados
+            $inicio = Carbon::parse($request->inicio)->format('Y-m-d H:i:s');
+            $fim = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
+
+            // Buscando reservas existentes
+            $reservasExistentes = Reserva::where('sala_id', $request->sala_id)
+                ->where(function ($query) use ($inicio, $fim) {
+                    $query->whereBetween('inicio', [$inicio, $fim])
+                        ->orWhereBetween('fim', [$inicio, $fim])
+                        ->orWhere(function ($query) use ($inicio, $fim) {
+                            $query->where('inicio', '<=', $inicio)
+                                ->where('fim', '>=', $fim);
+                        });
+                })
+                ->get(); // Obter as reservas para calcular a disponibilidade
+
+            $status = $this->calcularDisponibilidade($reservasExistentes, $inicio, $fim);
+
+            return ['disponivel' => $status === 'Disponível']; // Retorna um array
+        } catch (\Exception $e) {
+            Log::error("Erro na verificação de disponibilidade: " . $e->getMessage());
+            return response()->json(['error' => 'Erro ao verificar disponibilidade.'], 500);
+        }
     }
 }
