@@ -119,9 +119,11 @@ class ReservaController extends Controller
 
             $status = $this->calcularDisponibilidade($reservasExistentes, $inicio, $fim);
 
-            return ['disponivel' => $status === 'Disponível']; // Retorna um array
+            return response()->json(['disponivel' => $status === 'Disponível']);
         } catch (\Exception $e) {
-            Log::error("Erro na verificação de disponibilidade: " . $e->getMessage());
+            Log::error("Erro na verificação de disponibilidade: " . $e->getMessage(), [
+                'input' => $request->all(),
+            ]);
             return response()->json(['error' => 'Erro ao verificar disponibilidade.'], 500);
         }
     }

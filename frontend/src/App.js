@@ -7,6 +7,7 @@ import ReservaList from './components/Reserva/ReservaList';
 import SalaEdit from './components/Sala/SalaEdit';
 import SalaForm from './components/Sala/SalaForm';
 import SalaList from './components/Sala/SalaList';
+import SalaDisponibilidade from './components/Sala/SalaDisponibilidade';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -24,6 +25,8 @@ const App = () => {
                     <Route path="/salas" element={<SalaList />} />
                     <Route path="/salas/cadastrar" element={<SalaForm />} />
                     <Route path="/salas/edit/:id" element={<SalaEdit />} />
+                    <Route path="/salas/disponibilidade" element={<SalaDisponibilidade />} />
+                    
                 </Route>
             </Routes>
         </Router>
