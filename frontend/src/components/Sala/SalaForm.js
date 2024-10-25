@@ -43,7 +43,9 @@ const SalaForm = ({ onSalaCreated }) => {
             }, 2000);
         } catch (error) {
             if (error.response?.data?.errors?.nome) {
-                setError("Já existe uma sala com esse nome.");
+                setError("Já existe uma sala com este nome.");
+            } else if (error.response?.data?.errors?.numero) {
+                setError("Já existe uma sala com este número.");
             } else {
                 setError(error.response?.data?.message || "Erro ao criar sala.");
             }

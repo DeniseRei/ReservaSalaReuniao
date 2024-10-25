@@ -45,9 +45,14 @@ const SalaEdit = () => {
                 navigate('/salas');
             }, 2000);
         } catch (error) {
-            console.error('Erro ao editar a sala:', error);
-            setMensagem('Não foi possível atualizar a sala.'); // Mensagem de erro
-            
+            console.error('Erro ao atualizar a sala:', error);
+            if (error.response?.data?.errors?.nome) {
+                setMensagem('Não foi possível atualizar a sala. Já existe uma sala com este nome.');
+            } else if (error.response?.data?.errors?.numero) {
+                setMensagem('Não foi possível atualizar a sala. Já existe uma sala com este número.');
+            } else {
+                setMensagem('Erro ao atualizar a sala.'); // Mensagem padrão para outros erros
+            }
             // Limpa a mensagem após 3 segundos
             setTimeout(() => {
                 setMensagem('');

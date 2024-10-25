@@ -25,7 +25,7 @@ class SalaController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255|unique:salas,nome',
             'capacidade' => 'required|integer',
-            'numero' => 'required|integer',
+            'numero' => 'required|integer|min:1|unique:salas,numero',
         ]);
 
         // Cria uma nova sala
@@ -54,22 +54,26 @@ class SalaController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Validação dos dados recebidos
-        $request->validate([
-            'nome' => 'required|string|max:255|unique:salas,nome,'. $id,
-            'capacidade' => 'required|integer',
-            'numero' => 'required|integer',
-        ]);
+        // Busca a sala. Se não for encontrada, uma exceção será lançada.
+        $sala = Sala::find($id);
 
-        // Busca a sala
-        $sala = Sala::findOrFail($id);
-
+        // Verifica se a sala foi encontrada
         if (!$sala) {
             return response()->json(['message' => 'Sala não encontrada'], 404);
         }
 
-        // Atualiza a sala com os dados recebidos
-        $sala->update($request->all());
+        // Validação dos dados recebidos
+        $request->validate([
+            'nome' => 'required|string|max:255|unique:salas,nome,' . $sala->id,
+            'capacidade' => 'required|integer',
+            'numero' => 'required|integer|min:1|unique:salas,numero,' . $sala->id,
+        ]);
+
+        // Atualiza os dados da sala
+        $sala->nome = $request->nome;
+        $sala->capacidade = $request->capacidade;
+        $sala->numero = $request->numero;
+        $sala->save();
 
         // Retorna a sala atualizada
         return response()->json($sala, 200);
