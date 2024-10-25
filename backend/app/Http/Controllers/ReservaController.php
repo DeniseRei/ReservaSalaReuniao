@@ -29,7 +29,8 @@ class ReservaController extends Controller
         $fim = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
 
         // Verifica se a sala está disponível
-        $disponibilidade = $this->verificarDisponibilidade($request);
+        $disponibilidadeResponse = $this->verificarDisponibilidade($request);
+        $disponibilidade = json_decode($disponibilidadeResponse->getContent(), true);
 
         if (isset($disponibilidade['disponivel']) && !$disponibilidade['disponivel']) {
             return response()->json(['error' => 'A sala já está reservada nesse período.'], 409);

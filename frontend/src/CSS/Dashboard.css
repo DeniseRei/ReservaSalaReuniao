@@ -73,6 +73,34 @@
     margin-bottom: 50px; /* Adiciona espaço inferior para o rodapé */
 }
 
+/* Estilos para o submenu */
+.submenu {
+    list-style-type: none; /* Remove os marcadores da lista */
+    padding: 0; /* Remove o preenchimento padrão */
+    margin-left: 15px; /* Indentação para o submenu */
+    display: none; /* Oculta o submenu por padrão */
+}
+
+.submenu li {
+    margin: 5px 0; /* Espaçamento entre os itens do submenu */
+}
+
+.submenu li a {
+    text-decoration: none; /* Remove o sublinhado */
+    color: #555; /* Cor do texto do submenu */
+    display: flex; /* Para alinhar ícones e texto */
+    align-items: center; /* Alinha verticalmente */
+}
+
+.submenu li a:hover {
+    color: #007bff; /* Muda a cor ao passar o mouse */
+}
+
+/* Exibe o submenu quando ativo */
+.submenu.active {
+    display: block; /* Exibe o submenu */
+}
+
 .footer {
     background-color: #f1f1f1; /* Cor de fundo do rodapé */
     color: #333; /* Cor do texto */

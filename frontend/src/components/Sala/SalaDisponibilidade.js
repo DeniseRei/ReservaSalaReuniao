@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import ReservaForm from '../Reserva/ReservaForm';
 
 const SalaDisponibilidade = () => {
     const [salas, setSalas] = useState([]);
@@ -8,9 +9,9 @@ const SalaDisponibilidade = () => {
     const [inicio, setInicio] = useState('');
     const [fim, setFim] = useState('');
     const [disponibilidade, setDisponibilidade] = useState(null);
+    const [showForm, setShowForm] = useState(false); // Estado para controlar a visibilidade do formulário
 
     useEffect(() => {
-        // Carregar todas as salas ao montar o componente
         const fetchSalas = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/api/salas');
@@ -27,12 +28,10 @@ const SalaDisponibilidade = () => {
         const nomeSelecionado = e.target.value;
         setSalaNome(nomeSelecionado);
 
-        // Encontrar o ID da sala selecionada pelo nome
         const salaSelecionada = salas.find(sala => sala.nome === nomeSelecionado);
         setSalaId(salaSelecionada ? salaSelecionada.id : null);
     };
 
-    // Função para formatar data e hora no padrão Y-m-d H:i:s
     const formatDateTime = (datetime) => {
         const date = new Date(datetime);
         return date.toISOString().replace('T', ' ').split('.')[0];
@@ -47,8 +46,8 @@ const SalaDisponibilidade = () => {
         try {
             const response = await axios.post('http://localhost:8000/api/reservas/verificar-disponibilidade', {
                 sala_id: salaId,
-                inicio: formatDateTime(inicio),  // Aplicando a formatação
-                fim: formatDateTime(fim)         // Aplicando a formatação
+                inicio: formatDateTime(inicio),
+                fim: formatDateTime(fim)
             });
             setDisponibilidade(response.data.disponivel ? "Disponível" : "Indisponível");
         } catch (error) {
@@ -57,27 +56,35 @@ const SalaDisponibilidade = () => {
     };
 
     return (
-        <div>
-            <h3>Verificar Disponibilidade de Sala</h3>
-            <div className="mb-3">
-                <label htmlFor="sala" className="form-label">Nome da Sala</label>
-                <select id="sala" className="form-select" value={salaNome} onChange={handleSalaChange}>
-                    <option value="">Selecione uma sala</option>
-                    {salas.map(sala => (
-                        <option key={sala.id} value={sala.nome}>{sala.nome}</option>
-                    ))}
-                </select>
+        <div className="container mt-5">
+            <div className="card mb-3">
+                <div className="card-header">Verificar Disponibilidade da Sala</div>
+                <div className="card-body">
+                    <div className="mb-3">
+                        <label htmlFor="sala" className="form-label">Nome da Sala</label>
+                        <select id="sala" className="form-select" value={salaNome} onChange={handleSalaChange}>
+                            <option value="">Selecione uma sala</option>
+                            {salas.map(sala => (
+                                <option key={sala.id} value={sala.nome}>{sala.nome}</option>
+                            ))}
+                        </select>   
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="inicio" className="form-label">Início</label>
+                        <input type="datetime-local" id="inicio" className="form-control" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="fim" className="form-label">Fim</label>
+                        <input type="datetime-local" id="fim" className="form-control" value={fim} onChange={(e) => setFim(e.target.value)} />
+                    </div>
+                    <button onClick={verificarDisponibilidade} className="btn btn-primary">Verificar Disponibilidade</button>
+                    {disponibilidade && <div className="mt-3 alert alert-info">Status: {disponibilidade}</div>}
+                </div>
             </div>
-            <div className="mb-3">
-                <label htmlFor="inicio" className="form-label">Início</label>
-                <input type="datetime-local" id="inicio" className="form-control" value={inicio} onChange={(e) => setInicio(e.target.value)} />
-            </div>
-            <div className="mb-3">
-                <label htmlFor="fim" className="form-label">Fim</label>
-                <input type="datetime-local" id="fim" className="form-control" value={fim} onChange={(e) => setFim(e.target.value)} />
-            </div>
-            <button onClick={verificarDisponibilidade} className="btn btn-primary">Verificar Disponibilidade</button>
-            {disponibilidade && <div className="mt-3 alert alert-info">Status: {disponibilidade}</div>}
+            <button onClick={() => setShowForm(!showForm)} className="btn btn-success mb-3">
+                {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Reserva'}
+            </button>
+            {showForm && <ReservaForm onReservaCriada={() => {/* Aqui você pode fazer algo após a reserva ser criada */}} />}
         </div>
     );
 };
