@@ -23,7 +23,7 @@ class SalaController extends Controller
     {
         // Validação dos dados recebidos
         $request->validate([
-            'nome' => 'required|string|max:255',
+            'nome' => 'required|string|max:255|unique:salas,nome',
             'capacidade' => 'required|integer',
             'numero' => 'required|integer',
         ]);
@@ -56,7 +56,7 @@ class SalaController extends Controller
     {
         // Validação dos dados recebidos
         $request->validate([
-            'nome' => 'required|string|max:255',
+            'nome' => 'required|string|max:255|unique:salas,nome,'. $id,
             'capacidade' => 'required|integer',
             'numero' => 'required|integer',
         ]);
@@ -74,8 +74,6 @@ class SalaController extends Controller
         // Retorna a sala atualizada
         return response()->json($sala, 200);
     }
-
-
 
     /**
      * Remove the specified resource from storage.
