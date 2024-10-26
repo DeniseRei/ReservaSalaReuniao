@@ -8,13 +8,12 @@ const ReservaForm = ({ onReservaCriada }) => {
     const [inicio, setInicio] = useState('');
     const [fim, setFim] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState(''); // Estado para a mensagem de sucesso
+    const [successMessage, setSuccessMessage] = useState('');
 
-    // Função para buscar salas disponíveis
     useEffect(() => {
         const fetchSalas = async () => {
             try {
-                const response = await axiosConfig.get('/salas'); // Ajuste a URL conforme sua API
+                const response = await axiosConfig.get('/salas');
                 setSalas(response.data);
             } catch (error) {
                 console.error('Erro ao buscar salas:', error);
@@ -27,11 +26,9 @@ const ReservaForm = ({ onReservaCriada }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setErrorMessage(''); // Limpa a mensagem de erro antes de tentar enviar
+        setErrorMessage('');
     
         const now = new Date();
-    
-        // Verifica se a data de início ou fim é no passado
         if (new Date(inicio) < now || new Date(fim) < now) {
             setErrorMessage('As reservas não podem ser feitas para o passado, verifique as datas.');
             return;
@@ -40,24 +37,20 @@ const ReservaForm = ({ onReservaCriada }) => {
         const inicioDate = new Date(inicio);
         const fimDate = new Date(fim);
     
-        // Verifica se a data de fim é posterior à data de início
         if (fimDate <= inicioDate) {
             setErrorMessage('A data fim deve ser posterior à data início.');
             return;
         }
         try {
-            // Formata a data para o padrão 'Y-m-d H:i:s'
-            const inicioFormatted = inicioDate.toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
+            const inicioFormatted = inicioDate.toISOString().slice(0, 19).replace('T', ' ');
             const fimFormatted = fimDate.toISOString().slice(0, 19).replace('T', ' ');
     
-            // Verifica disponibilidade antes de criar a reserva
             const disponibilidadeResponse = await axiosConfig.post('/reservas/verificar-disponibilidade', {
                 sala_id: salaId,
                 inicio: inicioFormatted,
                 fim: fimFormatted,
             });
     
-            // Verifica se a resposta contém a propriedade 'disponivel'
             if (disponibilidadeResponse.data.disponivel === false) {
                 setErrorMessage('A sala já está reservada nesse período.');
                 return;
@@ -70,27 +63,27 @@ const ReservaForm = ({ onReservaCriada }) => {
                 fim: fimFormatted,
             });
     
-            // Lógica para lidar com a reserva criada
             onReservaCriada(response.data);
-    
-            // Exibe a mensagem de sucesso
             setSuccessMessage('Reserva cadastrada com sucesso!');
-    
-            // Remove a mensagem de sucesso após 2 segundos
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 2000); // 2 segundos
-    
+            }, 2000);
+
             // Limpa o formulário após a criação da reserva
-            setSalaId('');
-            setResponsavel('');
-            setInicio('');
-            setFim('');
+            limparFormulario();
         } catch (error) {
             console.error('Erro ao cadastrar reserva:', error);
-            // Aqui garantimos que a mensagem de erro seja retornada corretamente
             setErrorMessage(error.response?.data?.error || 'Erro ao cadastrar reserva.');
         }
+    };
+
+    const limparFormulario = () => {
+        setSalaId('');
+        setResponsavel('');
+        setInicio('');
+        setFim('');
+        setErrorMessage('');
+        setSuccessMessage('');
     };
 
     return (
@@ -98,7 +91,7 @@ const ReservaForm = ({ onReservaCriada }) => {
             <div className="card-header">Cadastrar Reserva</div>
             <div className="card-body">
                 {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-                {successMessage && <div className="alert alert-success">{successMessage}</div>} {/* Mensagem de sucesso */}
+                {successMessage && <div className="alert alert-success">{successMessage}</div>}
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label htmlFor="salaId" className="form-label">Selecione a Sala</label>
@@ -148,7 +141,8 @@ const ReservaForm = ({ onReservaCriada }) => {
                             className="form-control"
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary">Cadastrar Reserva</button>
+                    <button type="submit" className="btn btn-primary me-2">Cadastrar Reserva</button>
+                    <button type="button" className="btn btn-secondary" onClick={limparFormulario}>Limpar Formulário</button>
                 </form>
             </div>
         </div>

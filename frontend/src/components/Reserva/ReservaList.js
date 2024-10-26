@@ -13,6 +13,7 @@ const ReservaList = () => {
     const [showForm, setShowForm] = useState(false);
     const [message, setMessage] = useState('');
     const [responsavelFilter, setResponsavelFilter] = useState('');
+    const [salaFilter, setSalaFilter] = useState(''); // Novo estado para o filtro de nome da sala
 
     const fetchReservas = async () => {
         setLoading(true);
@@ -31,7 +32,7 @@ const ReservaList = () => {
     const handleCancel = useCallback(async (id) => {
         const confirmCancel = window.confirm("Você tem certeza que deseja cancelar a reserva?");
         if (!confirmCancel) return;
-    
+
         try {
             await axiosConfig.delete(`/reservas/${id}`);
             setMessage('Reserva excluída com sucesso!');
@@ -55,13 +56,15 @@ const ReservaList = () => {
         }
     }, [message]);
 
+    // Atualizar a lógica de filtragem para incluir o filtro de nome da sala
     useEffect(() => {
         setFilteredReservas(
             reservas.filter((reserva) =>
-                reserva.responsavel.toLowerCase().includes(responsavelFilter.toLowerCase())
+                reserva.responsavel.toLowerCase().includes(responsavelFilter.toLowerCase()) &&
+                reserva.sala.nome.toLowerCase().includes(salaFilter.toLowerCase()) // Filtrando pelo nome da sala
             )
         );
-    }, [responsavelFilter, reservas]);
+    }, [responsavelFilter, salaFilter, reservas]);
 
     const columns = React.useMemo(() => [
         { Header: 'Sala ID', accessor: 'sala_id' },
@@ -166,6 +169,16 @@ const ReservaList = () => {
                     placeholder="Filtrar por responsável"
                     value={responsavelFilter}
                     onChange={(e) => setResponsavelFilter(e.target.value)}
+                    className="form-control"
+                />
+            </div>
+            {/* Novo campo de filtro para o nome da sala */}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    placeholder="Filtrar por nome da sala"
+                    value={salaFilter}
+                    onChange={(e) => setSalaFilter(e.target.value)}
                     className="form-control"
                 />
             </div>
