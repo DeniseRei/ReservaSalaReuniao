@@ -11,8 +11,22 @@ class ReservaController extends Controller
 {
     public function index()
     {
+        // Obtenha a data e hora atual
+        $agora = Carbon::now();
+
+        // Busque todas as reservas com suas salas associadas
         $reservas = Reserva::with('sala')->get();
+
+        $reservas->transform(function ($reserva) use ($agora) {
+            // Verifica se a data de início é igual a hoje e a hora é anterior à hora atual
+            if (Carbon::parse($reserva->inicio)->isBefore($agora)) {
+                $reserva->status = 'concluída';
+            }
+            return $reserva;
+        });
+
         return response()->json($reservas);
+
     }
 
     public function store(Request $request)

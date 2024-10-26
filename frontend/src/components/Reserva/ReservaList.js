@@ -70,8 +70,8 @@ const ReservaList = () => {
             Header: 'Status',
             accessor: 'status',
             Cell: ({ cell: { value } }) => (
-                <span className={value === 'ativo' ? 'text-success' : 'text-danger'}>
-                    {value === 'ativo' ? 'Ativo' : 'Cancelado'}
+                <span className={value === 'ativo' ? 'text-success' : value === 'concluída' ? 'text-info' : 'text-danger'}>
+                    {value === 'ativo' ? 'Ativo' : value === 'concluída' ? 'Concluída' : 'Cancelado'}
                 </span>
             ),
         },

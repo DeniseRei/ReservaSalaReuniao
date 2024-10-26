@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('reservas', function (Blueprint $table) {
             // Adiciona a coluna status com valor padrão 'ativo'
-            $table->enum('status', ['ativo', 'cancelado'])->default('ativo');
+            $table->enum('status', ['ativo', 'cancelado', 'concluída'])->default('ativo');
         });
     }
 
