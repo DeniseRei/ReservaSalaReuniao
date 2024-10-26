@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('responsavel');
             $table->timestamp('inicio');
             $table->timestamp('fim');
+            $table->enum('status', ['ativo', 'cancelado', 'concluída'])->default('ativo');
             $table->timestamps();
         });
     }

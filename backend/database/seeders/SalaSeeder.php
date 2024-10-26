@@ -14,11 +14,11 @@ class SalaSeeder extends Seeder
     public function run()
     {
         DB::table('salas')->insert([
-            ['id' => 1, 'nome' => 'Sala A'],
-            ['id' => 2, 'nome' => 'Sala B'],
-            ['id' => 3, 'nome' => 'Sala C'],
-            ['id' => 4, 'nome' => 'Sala D'],
-            ['id' => 5, 'nome' => 'Sala E'],
+            ['id' => 1, 'nome' => 'Sala A', 'capacidade' => 20, 'numero' => 101],
+            ['id' => 2, 'nome' => 'Sala B', 'capacidade' => 15, 'numero' => 102],
+            ['id' => 3, 'nome' => 'Sala C', 'capacidade' => 10, 'numero' => 103],
+            ['id' => 4, 'nome' => 'Sala D', 'capacidade' => 30, 'numero' => 104],
+            ['id' => 5, 'nome' => 'Sala E', 'capacidade' => 25, 'numero' => 105],
         ]);
     }
 }
