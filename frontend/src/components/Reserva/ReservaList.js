@@ -3,20 +3,20 @@ import { Link } from 'react-router-dom';
 import axiosConfig from '../../AxiosConfig';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import ReservaForm from './ReservaForm';
-import { format } from 'date-fns'; 
-import pt from 'date-fns/locale/pt-BR'; 
+import { format } from 'date-fns';
+import pt from 'date-fns/locale/pt-BR';
 
 const ReservaList = () => {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false); 
+    const [showForm, setShowForm] = useState(false);
     const [message, setMessage] = useState('');
 
     const fetchReservas = async () => {
         setLoading(true);
         try {
             const response = await axiosConfig.get('/reservas');
-                        setReservas(response.data);
+            setReservas(response.data);
         } catch (error) {
             console.error('Erro ao buscar reservas:', error);
             setMessage('Erro ao buscar reservas.');
@@ -28,7 +28,7 @@ const ReservaList = () => {
     const handleCancel = useCallback(async (id) => {
         const confirmCancel = window.confirm("Você tem certeza que deseja cancelar a reserva?");
         if (!confirmCancel) return;
-
+    
         try {
             await axiosConfig.delete(`/reservas/${id}`);
             setMessage('Reserva excluída com sucesso!');
@@ -38,7 +38,7 @@ const ReservaList = () => {
             setMessage('Erro ao cancelar reserva.');
         }
     }, []);
-
+    
     useEffect(() => {
         fetchReservas();
     }, []);
@@ -56,12 +56,12 @@ const ReservaList = () => {
         { Header: 'Sala ID', accessor: 'sala_id' },
         { Header: 'Nome da Sala', accessor: 'sala.nome' },
         { Header: 'Responsável', accessor: 'responsavel' },
-        { 
+        {
             Header: 'Início',
             accessor: 'inicio',
             Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }),
         },
-        { 
+        {
             Header: 'Fim',
             accessor: 'fim',
             Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }),
@@ -70,8 +70,8 @@ const ReservaList = () => {
             Header: 'Status',
             accessor: 'status',
             Cell: ({ cell: { value } }) => (
-                <span className={value === 'ativo' ? 'text-success' : value === 'concluída' ? 'text-info' : 'text-danger'}>
-                    {value === 'ativo' ? 'Ativo' : value === 'concluída' ? 'Concluída' : 'Cancelado'}
+                <span className={getStatusClass(value)}>
+                    {getStatusLabel(value)}
                 </span>
             ),
         },
@@ -79,19 +79,49 @@ const ReservaList = () => {
             Header: 'Ações',
             Cell: ({ row }) => (
                 <div>
-                    <Link to={`/reservas/edit/${row.original.id}`}>
-                        <button className="btn btn-primary">Editar</button>
-                    </Link>
-                    <button
-                        className="btn btn-danger ms-2"
-                        onClick={() => handleCancel(row.original.id)}
-                    >
-                        Cancelar
-                    </button>
+                    {row.original.status !== 'concluída' && row.original.status !== 'cancelado' && (
+                        <Link to={`/reservas/edit/${row.original.id}`}>
+                            <button className="btn btn-primary">Editar</button>
+                        </Link>
+                    )}
+                    {row.original.status !== 'concluída' && row.original.status !== 'cancelado' && (
+                        <button
+                            className="btn btn-danger ms-2"
+                            onClick={() => handleCancel(row.original.id)}
+                        >
+                            Cancelar
+                        </button>
+                    )}
                 </div>
             ),
-        },
-    ], [handleCancel]);    
+        }
+    ], [handleCancel]);
+    
+    const getStatusClass = (status) => {
+        switch (status) {
+            case 'ativo':
+                return 'text-success';
+            case 'concluída':
+                return 'text-info';
+            case 'cancelado':
+                return 'text-danger';
+            default:
+                return '';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case 'ativo':
+                return 'Ativo';
+            case 'concluída':
+                return 'Concluída';
+            case 'cancelado':
+                return 'Cancelado';
+            default:
+                return 'Desconhecido';
+        }
+    };
 
     const {
         getTableProps,
@@ -115,7 +145,7 @@ const ReservaList = () => {
         <div className="container mt-4">
             <h2 className="mb-4">Lista de Reservas</h2>
             {message && <div className="alert alert-success">{message}</div>}
-            <button onClick={() => setShowForm(!showForm)} className="btn btn-success mb-3">
+            <button onClick={() => setShowForm(prev => !prev)} className="btn btn-success mb-3">
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Reserva'}
             </button>
             {showForm && <ReservaForm onReservaCriada={fetchReservas} />}
@@ -158,8 +188,8 @@ const ReservaList = () => {
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<<'}</button>
-                                    <button onClick={() => previousPage()} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<'}</button>
-                                    <button onClick={() => nextPage()} disabled={!canNextPage} className="btn btn-secondary me-1">{'>'}</button>
+                                    <button onClick={previousPage} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<'}</button>
+                                    <button onClick={nextPage} disabled={!canNextPage} className="btn btn-secondary me-1">{'>'}</button>
                                     <button onClick={() => gotoPage(pageOptions.length - 1)} disabled={!canNextPage} className="btn btn-secondary">{'>>'}</button>
                                 </div>
                                 <span>

@@ -42,7 +42,21 @@ const SalaDisponibilidade = () => {
             alert("Por favor, selecione a sala e preencha todos os campos.");
             return;
         }
-
+    
+        const now = new Date();
+    
+        // Verifica se a data de início ou fim é no passado
+        if (new Date(inicio) < now || new Date(fim) < now) {
+            alert('As reservas não podem ser feitas para o passado, verifique as datas.');
+            return;
+        }
+    
+        // Verifica se a data de fim é posterior à data de início
+        if (new Date(fim) <= new Date(inicio)) {
+            alert('A data de fim deve ser posterior à data de início.');
+            return;
+        }
+    
         try {
             const response = await axios.post('http://localhost:8000/api/reservas/verificar-disponibilidade', {
                 sala_id: salaId,
@@ -52,8 +66,10 @@ const SalaDisponibilidade = () => {
             setDisponibilidade(response.data.disponivel ? "Disponível" : "Indisponível");
         } catch (error) {
             console.error("Erro na verificação de disponibilidade:", error);
+            alert("Ocorreu um erro ao verificar a disponibilidade. Tente novamente.");
         }
     };
+    
 
     return (
         <div className="container mt-5">
