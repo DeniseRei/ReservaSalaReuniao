@@ -16,21 +16,26 @@ const ReservaList = () => {
         setLoading(true);
         try {
             const response = await axiosConfig.get('/reservas');
-            setReservas(response.data);
+                        setReservas(response.data);
         } catch (error) {
             console.error('Erro ao buscar reservas:', error);
+            setMessage('Erro ao buscar reservas.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleCancel = useCallback(async (id) => {
+        const confirmCancel = window.confirm("Você tem certeza que deseja cancelar a reserva?");
+        if (!confirmCancel) return;
+
         try {
             await axiosConfig.delete(`/reservas/${id}`);
             setMessage('Reserva excluída com sucesso!');
-            fetchReservas();
+            fetchReservas(); // Atualiza a lista de reservas
         } catch (error) {
             console.error('Erro ao cancelar reserva:', error);
+            setMessage('Erro ao cancelar reserva.');
         }
     }, []);
 
@@ -48,18 +53,9 @@ const ReservaList = () => {
     }, [message]);
 
     const columns = React.useMemo(() => [
-        { 
-            Header: 'Sala ID',
-            accessor: 'sala_id',
-        },
-        { 
-            Header: 'Nome da Sala',
-            accessor: 'sala.nome', 
-        },
-        { 
-            Header: 'Responsável',
-            accessor: 'responsavel',
-         },
+        { Header: 'Sala ID', accessor: 'sala_id' },
+        { Header: 'Nome da Sala', accessor: 'sala.nome' },
+        { Header: 'Responsável', accessor: 'responsavel' },
         { 
             Header: 'Início',
             accessor: 'inicio',
@@ -69,7 +65,16 @@ const ReservaList = () => {
             Header: 'Fim',
             accessor: 'fim',
             Cell: ({ cell: { value } }) => format(new Date(value), 'Pp', { locale: pt }),
-         },
+        },
+        {
+            Header: 'Status',
+            accessor: 'status',
+            Cell: ({ cell: { value } }) => (
+                <span className={value === 'ativo' ? 'text-success' : 'text-danger'}>
+                    {value === 'ativo' ? 'Ativo' : 'Cancelado'}
+                </span>
+            ),
+        },
         {
             Header: 'Ações',
             Cell: ({ row }) => (
@@ -79,19 +84,14 @@ const ReservaList = () => {
                     </Link>
                     <button
                         className="btn btn-danger ms-2"
-                        onClick={() => {
-                            const confirmCancel = window.confirm("Você tem certeza que deseja cancelar a reserva?");
-                            if (confirmCancel) {
-                                handleCancel(row.original.id);
-                            }
-                        }}
+                        onClick={() => handleCancel(row.original.id)}
                     >
                         Cancelar
                     </button>
                 </div>
             ),
         },
-    ], [handleCancel]);
+    ], [handleCancel]);    
 
     const {
         getTableProps,

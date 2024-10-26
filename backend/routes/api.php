@@ -22,6 +22,11 @@ Route::apiResource('salas', SalaController::class);
 Route::apiResource('reservas', ReservaController::class);
 // Rota para verificar a disponibilidade da sala
 Route::post('/reservas/verificar-disponibilidade', [ReservaController::class, 'verificarDisponibilidade']);
+// Rota para cancelar uma reserva
+Route::patch('/reservas/{reserva}/cancelar', [ReservaController::class, 'cancelar']);
+
+
+
 
 
 

@@ -22,6 +22,7 @@ class ReservaController extends Controller
             'responsavel' => 'required|string|max:255',
             'inicio' => 'required|date',
             'fim' => 'required|date|after:inicio',
+            'status' => 'ativo'
         ]);
 
         // Convertendo as datas para o formato do banco de dados (se necessário)
@@ -67,19 +68,14 @@ class ReservaController extends Controller
 
     public function destroy(Reserva $reserva)
     {
+        // Verifica se a reserva existe
         if (!$reserva) {
             return response()->json(['error' => 'Reserva não encontrada'], 404);
         }
 
-        try {
-            Log::info("Cancelando reserva com ID: " . $reserva->id);
-            $reserva->delete();
-            return response()->noContent();
-        } catch (\Exception $e) {
-            Log::error("Erro ao cancelar reserva: " . $e->getMessage());
-            return response()->json(['error' => 'Erro ao cancelar reserva'], 500);
-        }
+        return $this->cancelar($reserva);
     }
+
 
     private function calcularDisponibilidade($reservas, $inicio, $fim)
     {
@@ -128,4 +124,23 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Erro ao verificar disponibilidade.'], 500);
         }
     }
+
+    public function cancelar(Reserva $reserva)
+    {
+        // Verifica se a reserva existe
+        if (!$reserva) {
+            return response()->json(['error' => 'Reserva não encontrada'], 404);
+        }
+
+        try {
+            // Atualiza o status da reserva para 'cancelado'
+            $reserva->update(['status' => 'cancelado']);
+
+            return response()->json(['message' => 'Reserva cancelada com sucesso', 'reserva' => $reserva]);
+        } catch (\Exception $e) {
+            Log::error("Erro ao cancelar reserva: " . $e->getMessage());
+            return response()->json(['error' => 'Erro ao cancelar reserva'], 500);
+        }
+    }
+
 }

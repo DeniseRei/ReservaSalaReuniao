@@ -14,6 +14,7 @@ class Reserva extends Model
         'responsavel',
         'inicio',
         'fim',
+        'status'
     ]; // Campos que podem ser preenchidos em massa
 
     public function sala()
