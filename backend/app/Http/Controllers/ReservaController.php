@@ -116,15 +116,19 @@ class ReservaController extends Controller
             $inicio = Carbon::parse($request->inicio)->format('Y-m-d H:i:s');
             $fim = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
 
-            // Buscando reservas existentes
+            // Buscando reservas existentes com status "ativo" ou status diferente de "cancelado"
             $reservasExistentes = Reserva::where('sala_id', $request->sala_id)
+                ->where(function ($query) {
+                    $query->where('status', 'ativo')
+                          ->orWhere('status', '!=', 'cancelado');
+                })
                 ->where(function ($query) use ($inicio, $fim) {
                     $query->whereBetween('inicio', [$inicio, $fim])
-                        ->orWhereBetween('fim', [$inicio, $fim])
-                        ->orWhere(function ($query) use ($inicio, $fim) {
-                            $query->where('inicio', '<=', $inicio)
-                                ->where('fim', '>=', $fim);
-                        });
+                          ->orWhereBetween('fim', [$inicio, $fim])
+                          ->orWhere(function ($query) use ($inicio, $fim) {
+                              $query->where('inicio', '<=', $inicio)
+                                    ->where('fim', '>=', $fim);
+                          });
                 })
                 ->get(); // Obter as reservas para calcular a disponibilidade
 
@@ -138,6 +142,7 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Erro ao verificar disponibilidade.'], 500);
         }
     }
+
 
     public function cancelar(Reserva $reserva)
     {

@@ -29,22 +29,23 @@ const ReservaForm = ({ onReservaCriada }) => {
         setErrorMessage('');
     
         const now = new Date();
-        if (new Date(inicio) < now || new Date(fim) < now) {
+        const inicioDate = new Date(inicio);
+        const fimDate = new Date(fim);
+    
+        if (inicioDate < now || fimDate < now) {
             setErrorMessage('As reservas não podem ser feitas para o passado, verifique as datas.');
             return;
         }
-    
-        const inicioDate = new Date(inicio);
-        const fimDate = new Date(fim);
     
         if (fimDate <= inicioDate) {
             setErrorMessage('A data fim deve ser posterior à data início.');
             return;
         }
-        try {
-            const inicioFormatted = inicioDate.toISOString().slice(0, 19).replace('T', ' ');
-            const fimFormatted = fimDate.toISOString().slice(0, 19).replace('T', ' ');
     
+        const inicioFormatted = inicioDate.toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace('T', ' ');
+        const fimFormatted = fimDate.toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace('T', ' ');
+    
+        try {
             const disponibilidadeResponse = await axiosConfig.post('/reservas/verificar-disponibilidade', {
                 sala_id: salaId,
                 inicio: inicioFormatted,
@@ -63,20 +64,24 @@ const ReservaForm = ({ onReservaCriada }) => {
                 fim: fimFormatted,
             });
     
-            onReservaCriada(response.data);
-            setSuccessMessage('Reserva cadastrada com sucesso!');
-            setTimeout(() => {
-                setSuccessMessage('');
-            }, 2000);
-
-            // Limpa o formulário após a criação da reserva
-            limparFormulario();
+            if (response.status === 201) {
+                console.log('Reserva criada com sucesso'); // Mensagem de depuração para verificar se chega aqui
+                onReservaCriada(response.data);
+                setSuccessMessage('Reserva cadastrada com sucesso!');
+                setTimeout(() => {
+                    setSuccessMessage('');
+                    limparFormulario();
+                }, 2000);
+            } else {
+                setErrorMessage('Erro ao cadastrar reserva.');
+            }
+            
         } catch (error) {
             console.error('Erro ao cadastrar reserva:', error);
             setErrorMessage(error.response?.data?.error || 'Erro ao cadastrar reserva.');
         }
     };
-
+    
     const limparFormulario = () => {
         setSalaId('');
         setResponsavel('');
