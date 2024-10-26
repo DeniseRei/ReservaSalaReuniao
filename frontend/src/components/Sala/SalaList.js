@@ -6,15 +6,18 @@ import SalaForm from './SalaForm';
 
 const SalaList = () => {
     const [salas, setSalas] = useState([]);
+    const [filteredSalas, setFilteredSalas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [salaNomeFilter, setSalaNomeFilter] = useState('');
 
     const fetchSalas = async () => {
         setLoading(true);
         try {
             const response = await axiosConfig.get('/salas');
             setSalas(response.data);
+            setFilteredSalas(response.data);
         } catch (error) {
             console.error("Erro ao buscar salas:", error);
             setError('Erro ao carregar salas.');
@@ -28,21 +31,29 @@ const SalaList = () => {
             try {
                 await axiosConfig.delete(`/salas/${id}`);
                 setSalas(salas.filter(sala => sala.id !== id));
+                setFilteredSalas(filteredSalas.filter(sala => sala.id !== id));
             } catch (error) {
                 console.error("Erro ao excluir sala:", error);
                 setError('Erro ao excluir sala.');
             }
         }
-    }, [salas]);
+    }, [salas, filteredSalas]);
 
-    // Função que será chamada quando uma sala for criada
     const handleSalaCreated = async () => {
-        await fetchSalas(); // Atualiza a lista de salas
+        await fetchSalas();
     };
 
     useEffect(() => {
         fetchSalas();
     }, []);
+
+    useEffect(() => {
+        setFilteredSalas(
+            salas.filter(sala =>
+                sala.nome.toLowerCase().includes(salaNomeFilter.toLowerCase())
+            )
+        );
+    }, [salaNomeFilter, salas]);
 
     const columns = React.useMemo(() => [
         {
@@ -91,11 +102,11 @@ const SalaList = () => {
         previousPage,
         nextPage,
         pageOptions,
-    } = useTable({
-        columns,
-        data: salas,
-        initialState: { pageSize: 5 },
-    }, useSortBy, usePagination);
+    } = useTable(
+        { columns, data: filteredSalas, initialState: { pageSize: 5 } },
+        useSortBy,
+        usePagination
+    );
 
     return (
         <div className="container mt-4">
@@ -104,48 +115,62 @@ const SalaList = () => {
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Sala'}
             </button>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            {showForm && <SalaForm onSalaCreated={handleSalaCreated} />} {/* Passando a função como prop */}
+            {showForm && <SalaForm onSalaCreated={handleSalaCreated} />}
+
+            {/* Campo de entrada para o filtro de nome da sala */}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    placeholder="Filtrar por nome da sala"
+                    value={salaNomeFilter}
+                    onChange={(e) => setSalaNomeFilter(e.target.value)}
+                    className="form-control"
+                />
+            </div>
+
             <div className="card mt-4">
                 <div className="card-body">
                     {loading ? (
                         <p>Carregando...</p>
                     ) : (
                         <>
-                            <table {...getTableProps()} className="table table-striped table-bordered">
-                                <thead>
-                                    {headerGroups.map(headerGroup => (
-                                        <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-                                            {headerGroup.headers.map(column => (
-                                                <th {...column.getHeaderProps(column.getSortByToggleProps())} key={column.id}>
-                                                    {column.render('Header')}
-                                                    <span>
-                                                        {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                                                    </span>
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </thead>
-                                <tbody {...getTableBodyProps()}>
-                                    {page.map(row => {
-                                        prepareRow(row);
-                                        return (
-                                            <tr {...row.getRowProps()} key={row.original.id}>
-                                                {row.cells.map(cell => (
-                                                    <td {...cell.getCellProps()} key={cell.column.id}>
-                                                        {cell.render('Cell')}
-                                                    </td>
+                            <div className="table-responsive">
+                                <table {...getTableProps()} className="table table-striped table-bordered">
+                                    <thead>
+                                        {headerGroups.map(headerGroup => (
+                                            <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
+                                                {headerGroup.headers.map(column => (
+                                                    <th {...column.getHeaderProps(column.getSortByToggleProps())} key={column.id}>
+                                                        {column.render('Header')}
+                                                        <span>
+                                                            {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                                                        </span>
+                                                    </th>
                                                 ))}
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                        ))}
+                                    </thead>
+                                    <tbody {...getTableBodyProps()}>
+                                        {page.map(row => {
+                                            prepareRow(row);
+                                            return (
+                                                <tr {...row.getRowProps()} key={row.original.id}>
+                                                    {row.cells.map(cell => (
+                                                        <td {...cell.getCellProps()} key={cell.column.id}>
+                                                            {cell.render('Cell')}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<<'}</button>
-                                    <button onClick={() => previousPage()} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<'}</button>
-                                    <button onClick={() => nextPage()} disabled={!canNextPage} className="btn btn-secondary me-1">{'>'}</button>
+                                    <button onClick={previousPage} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<'}</button>
+                                    <button onClick={nextPage} disabled={!canNextPage} className="btn btn-secondary me-1">{'>'}</button>
                                     <button onClick={() => gotoPage(pageOptions.length - 1)} disabled={!canNextPage} className="btn btn-secondary">{'>>'}</button>
                                 </div>
                                 <span>

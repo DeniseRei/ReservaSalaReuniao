@@ -8,15 +8,18 @@ import pt from 'date-fns/locale/pt-BR';
 
 const ReservaList = () => {
     const [reservas, setReservas] = useState([]);
+    const [filteredReservas, setFilteredReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [message, setMessage] = useState('');
+    const [responsavelFilter, setResponsavelFilter] = useState('');
 
     const fetchReservas = async () => {
         setLoading(true);
         try {
             const response = await axiosConfig.get('/reservas');
             setReservas(response.data);
+            setFilteredReservas(response.data);
         } catch (error) {
             console.error('Erro ao buscar reservas:', error);
             setMessage('Erro ao buscar reservas.');
@@ -32,7 +35,7 @@ const ReservaList = () => {
         try {
             await axiosConfig.delete(`/reservas/${id}`);
             setMessage('Reserva excluída com sucesso!');
-            fetchReservas(); // Atualiza a lista de reservas
+            fetchReservas();
         } catch (error) {
             console.error('Erro ao cancelar reserva:', error);
             setMessage('Erro ao cancelar reserva.');
@@ -51,6 +54,14 @@ const ReservaList = () => {
             return () => clearTimeout(timer);
         }
     }, [message]);
+
+    useEffect(() => {
+        setFilteredReservas(
+            reservas.filter((reserva) =>
+                reserva.responsavel.toLowerCase().includes(responsavelFilter.toLowerCase())
+            )
+        );
+    }, [responsavelFilter, reservas]);
 
     const columns = React.useMemo(() => [
         { Header: 'Sala ID', accessor: 'sala_id' },
@@ -78,15 +89,15 @@ const ReservaList = () => {
         {
             Header: 'Ações',
             Cell: ({ row }) => (
-                <div>
+                <div className="d-flex flex-column flex-md-row">
                     {row.original.status !== 'concluída' && row.original.status !== 'cancelado' && (
                         <Link to={`/reservas/edit/${row.original.id}`}>
-                            <button className="btn btn-primary">Editar</button>
+                            <button className="btn btn-primary mb-2 mb-md-0 me-md-2">Editar</button>
                         </Link>
                     )}
                     {row.original.status !== 'concluída' && row.original.status !== 'cancelado' && (
                         <button
-                            className="btn btn-danger ms-2"
+                            className="btn btn-danger"
                             onClick={() => handleCancel(row.original.id)}
                         >
                             Cancelar
@@ -137,7 +148,7 @@ const ReservaList = () => {
         pageOptions,
     } = useTable({
         columns,
-        data: reservas,
+        data: filteredReservas,
         initialState: { pageSize: 5 },
     }, useSortBy, usePagination);
 
@@ -149,42 +160,54 @@ const ReservaList = () => {
                 {showForm ? 'Cancelar Cadastro' : 'Cadastrar Nova Reserva'}
             </button>
             {showForm && <ReservaForm onReservaCriada={fetchReservas} />}
+            <div className="mb-3">
+                <input
+                    type="text"
+                    placeholder="Filtrar por responsável"
+                    value={responsavelFilter}
+                    onChange={(e) => setResponsavelFilter(e.target.value)}
+                    className="form-control"
+                />
+            </div>
             <div className="card mt-4">
                 <div className="card-body">
                     {loading ? (
                         <p>Carregando...</p>
                     ) : (
                         <>
-                            <table {...getTableProps()} className="table table-striped table-bordered">
-                                <thead>
-                                    {headerGroups.map(headerGroup => (
-                                        <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-                                            {headerGroup.headers.map(column => (
-                                                <th {...column.getHeaderProps(column.getSortByToggleProps())} key={column.id}>
-                                                    {column.render('Header')}
-                                                    <span>
-                                                        {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                                                    </span>
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </thead>
-                                <tbody {...getTableBodyProps()}>
-                                    {page.map(row => {
-                                        prepareRow(row);
-                                        return (
-                                            <tr {...row.getRowProps()} key={row.original.id}>
-                                                {row.cells.map(cell => (
-                                                    <td {...cell.getCellProps()} key={cell.column.id}>
-                                                        {cell.render('Cell')}
-                                                    </td>
+                            {/* Wrapper responsivo para a tabela */}
+                            <div className="table-responsive">
+                                <table {...getTableProps()} className="table table-striped table-bordered">
+                                    <thead>
+                                        {headerGroups.map(headerGroup => (
+                                            <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
+                                                {headerGroup.headers.map(column => (
+                                                    <th {...column.getHeaderProps(column.getSortByToggleProps())} key={column.id}>
+                                                        {column.render('Header')}
+                                                        <span>
+                                                            {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                                                        </span>
+                                                    </th>
                                                 ))}
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                        ))}
+                                    </thead>
+                                    <tbody {...getTableBodyProps()}>
+                                        {page.map(row => {
+                                            prepareRow(row);
+                                            return (
+                                                <tr {...row.getRowProps()} key={row.original.id}>
+                                                    {row.cells.map(cell => (
+                                                        <td {...cell.getCellProps()} key={cell.column.id}>
+                                                            {cell.render('Cell')}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="btn btn-secondary me-1">{'<<'}</button>
