@@ -54,12 +54,49 @@ const ReservaEdit = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setMensagem(''); // Limpa mensagens anteriores
+    
+        const now = new Date();
+        const inicioDate = new Date(reserva.inicio);
+        const fimDate = new Date(reserva.fim);
+    
+        // Verificação para datas no passado
+        if (inicioDate < now || fimDate < now) {
+            setMensagem('As reservas não podem ser feitas para o passado, verifique as datas.');
+            return;
+        }
+    
+        // Verificação se a data fim é posterior à data início
+        if (fimDate <= inicioDate) {
+            setMensagem('A data fim deve ser posterior à data início.');
+            return;
+        }
+    
+        // Verificação de disponibilidade
+        const inicioFormatted = format(inicioDate, 'yyyy-MM-dd HH:mm:ss');
+        const fimFormatted = format(fimDate, 'yyyy-MM-dd HH:mm:ss');
+    
         try {
+            const disponibilidadeResponse = await axiosConfig.post('/reservas/verificar-disponibilidade', {
+                sala_id: reserva.sala_id, // Certifique-se de usar o ID da sala correta
+                inicio: inicioFormatted,
+                fim: fimFormatted,
+            });
+    
+            // Verifica se a sala já está reservada no período
+            if (disponibilidadeResponse.data.disponivel === false) {
+                setMensagem('A sala já está reservada nesse período.');
+                return;
+            }
+    
+            // Dados da reserva com as datas formatadas
             const reservaData = {
                 ...reserva,
-                inicio: format(new Date(reserva.inicio), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'),
-                fim: format(new Date(reserva.fim), 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx'),
+                inicio: inicioFormatted,
+                fim: fimFormatted,
             };
+    
+            // Atualização da reserva
             await axiosConfig.put(`/reservas/${id}`, reservaData);
             setMensagem('Reserva atualizada com sucesso!'); // Mensagem de sucesso
             
@@ -78,6 +115,7 @@ const ReservaEdit = () => {
             }, 3000);
         }
     };
+    
 
     return (
         <div className="card mb-3">

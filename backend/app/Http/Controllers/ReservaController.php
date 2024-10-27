@@ -69,16 +69,41 @@ class ReservaController extends Controller
 
     public function update(Request $request, Reserva $reserva)
     {
+        // Validação dos dados de entrada
         $request->validate([
-            'sala_id' => 'exists:salas,id',
-            'responsavel' => 'string|max:255',
-            'inicio' => 'date',
-            'fim' => 'date|after:inicio',
+            'sala_id' => 'required|exists:salas,id',
+            'responsavel' => 'required|string|max:255',
+            'inicio' => 'required|date',
+            'fim' => 'required|date|after:inicio',
         ]);
 
-        $reserva->update($request->all());
+        // Convertendo as datas para o formato do banco de dados (se necessário)
+        $inicioNovo = Carbon::parse($request->inicio)->format('Y-m-d H:i:s');
+        $fimNovo = Carbon::parse($request->fim)->format('Y-m-d H:i:s');
+
+        // Adiciona a reserva atual como não disponível para a verificação
+        $disponibilidadeRequest = new Request([
+            'sala_id' => $request->sala_id,
+            'inicio' => $inicioNovo,
+            'fim' => $fimNovo,
+            'id' => $reserva->id // Passa o ID da reserva para ignorá-la
+        ]);
+
+        // Verifica a disponibilidade
+        $disponibilidadeResponse = $this->verificarDisponibilidade($disponibilidadeRequest);
+        $disponibilidade = json_decode($disponibilidadeResponse->getContent(), true);
+
+        // Verifica se a sala está disponível
+        if (isset($disponibilidade['disponivel']) && !$disponibilidade['disponivel']) {
+            return response()->json(['error' => 'A sala já está reservada nesse período.'], 409);
+        }
+
+        // Atualiza a reserva
+        $reserva->update($request->only(['sala_id', 'responsavel', 'inicio', 'fim']));
         return response()->json($reserva);
     }
+
+
 
     public function destroy(Reserva $reserva)
     {
@@ -89,7 +114,6 @@ class ReservaController extends Controller
 
         return $this->cancelar($reserva);
     }
-
 
     private function calcularDisponibilidade($reservas, $inicio, $fim)
     {
@@ -110,6 +134,7 @@ class ReservaController extends Controller
                 'sala_id' => 'required|exists:salas,id',
                 'inicio' => 'required|date_format:Y-m-d H:i:s',
                 'fim' => 'required|date_format:Y-m-d H:i:s|after:inicio',
+                'id' => 'nullable|exists:reservas,id' // Adicionando a validação para o ID
             ]);
 
             // Convertendo as datas para o formato do banco de dados
@@ -120,16 +145,17 @@ class ReservaController extends Controller
             $reservasExistentes = Reserva::where('sala_id', $request->sala_id)
                 ->where(function ($query) {
                     $query->where('status', 'ativo')
-                          ->orWhere('status', '!=', 'cancelado');
+                        ->orWhere('status', '!=', 'cancelado');
                 })
                 ->where(function ($query) use ($inicio, $fim) {
                     $query->whereBetween('inicio', [$inicio, $fim])
-                          ->orWhereBetween('fim', [$inicio, $fim])
-                          ->orWhere(function ($query) use ($inicio, $fim) {
-                              $query->where('inicio', '<=', $inicio)
-                                    ->where('fim', '>=', $fim);
-                          });
+                        ->orWhereBetween('fim', [$inicio, $fim])
+                        ->orWhere(function ($query) use ($inicio, $fim) {
+                            $query->where('inicio', '<=', $inicio)
+                                ->where('fim', '>=', $fim);
+                        });
                 })
+                ->where('id', '!=', $request->id) // Ignorar a reserva que está sendo editada
                 ->get(); // Obter as reservas para calcular a disponibilidade
 
             $status = $this->calcularDisponibilidade($reservasExistentes, $inicio, $fim);
@@ -142,7 +168,6 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Erro ao verificar disponibilidade.'], 500);
         }
     }
-
 
     public function cancelar(Reserva $reserva)
     {
